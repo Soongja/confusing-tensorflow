@@ -1,17 +1,19 @@
-# Confusing Tensorflow
+# 헷갈쓰
+## Contrib
+### tf.contrib
+- contrib module containing volatile or experimental code.
+- 텐서플로우 오픈소스 커뮤니티에서 개발에 기여한 코드를 반영했으나,
+아직 테스트가 필요한 애들 모아놓은 모듈.
 
-## Intro
-tensorflow를 이용해 내 맘대로 layer를 쌓으려고 할 때 시작부터 헷갈리는 것들이 너무 많다.
-예를 들어, 단순한 convolution 2d layer를 한 층 쌓으려고 해도, tf.nn.conv2d를 사용해야 하는지,
-tf.layers.conv2d를 사용해야 하는지, 혹은 tf.keras.layers에서 Conv2d를 import해와서 사용해야
-하는지 알 수 없다. 또한, 그래프를 생성할 때 각 노드들에 이름을 부여해야 하는데, 어떤 노드에
-이름을 부여할 수 있는지, 얼마나 잘게 쪼개서 이름을 부여하는 것이 좋은지, variable_scope는
-어떻게 사용해야 하는지, tf.layers.conv2d의 "name" argument는 무엇인지 등에 대한 의문이 생긴다.
+### tf.contrib.slim
+- Slim is an interface to contrib functions, examples and models.
+
+
+
 
 ## Layers
-
 ### tf.nn.conv2d [[doc]](https://www.tensorflow.org/api_docs/python/tf/nn/conv2d)  
-- 가장 기본이 되는 conv2d layer. 간단히 하려면 그냥 이걸 쓰면 된다.
+- 가장 기본이 되는 conv2d layer. 간단히 만들려면 그냥 이걸 쓰면 된다.
 - ex) conv = tf.nn.conv2d()
 ```python
 tf.nn.conv2d(
@@ -68,8 +70,29 @@ reuse=None
 그치만 keras API 쩐다고 하니, 알아두면 좋을 것이다.
 
 
-## Scopes
 
+
+## Batch Normalization
+### tf.nn.batch_normalization
+
+### tf.layers.batch_normalization
+- parameter로 training, trainable 두 가지가 있어서 둘 모두를 조절해야 함.
+
+### tf.contrib.layers.batch_norm
+- 편리.
+ - updates_collections=None에 대한 설명.  
+ "One can set updates_collections=None to force the updates in place,
+ but that can have a speed penalty, especially in distributed settings."
+ - scale=True에 대한 설명.  
+ "Note that by default batch_norm() only centers, normalizes, and shifts the inputs;
+ it does not scale them (i.e., γ is fixed to 1). This makes sense for layers with no activation
+ function or with the ReLU activation function, since the next layer’s weights can take care
+ of scaling, but for any other activation function, you should add "scale": True to bn_params."
+
+
+
+
+## Scopes
 ### tf.name_scope()
 
 ### tf.variable_scope()
@@ -77,16 +100,25 @@ reuse=None
 ### tf.get_variable()
 
 
-## Contrib
-- contrib module containing volatile or experimental code.
-- 텐서플로우 오픈소스 커뮤니티에서 개발에 기여한 코드를 반영했으나, 아직 테스트가 필요한 애들 모아놓은 모듈.
 
-## Batch Normalization
 
-### tf.layers.batch_normalization
-- 이것을 사용하라!!
-### tf.contrib.layers.batch_norm
- 
+## Graphs
+### tf.get_default_Graph()
+
+### sess.graph()
+
+
+
+
+## Summaries
+### tf.summary.merge_all()
+- 모든 summary 다 합쳐줘
+
+### tf.summary.merge
+- 원하는 summary들만 합칠 때 사용
+
+
+
 
 ## References
 https://tensorflowkorea.gitbooks.io/tensorflow-kr/g3doc/how_tos/variable_scope/
