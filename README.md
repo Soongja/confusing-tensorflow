@@ -1,4 +1,5 @@
 # 헷갈쓰
+
 ## Contrib
 ### tf.contrib
 - contrib module containing volatile or experimental code.
@@ -7,8 +8,6 @@
 
 ### tf.contrib.slim
 - Slim is an interface to contrib functions, examples and models.
-
-
 
 
 ## Layers
@@ -70,8 +69,6 @@ reuse=None
 그치만 keras API 쩐다고 하니, 알아두면 좋을 것이다.
 
 
-
-
 ## Batch Normalization
 ### tf.nn.batch_normalization
 
@@ -90,8 +87,6 @@ reuse=None
  of scaling, but for any other activation function, you should add "scale": True to bn_params."
 
 
-
-
 ## Scopes
 ### tf.name_scope()
 
@@ -100,14 +95,10 @@ reuse=None
 ### tf.get_variable()
 
 
-
-
 ## Graphs
 ### tf.get_default_Graph()
 
 ### sess.graph()
-
-
 
 
 ## Summaries
@@ -118,7 +109,25 @@ reuse=None
 - 원하는 summary들만 합칠 때 사용
 
 
+## Global Step
 
+### global_step = tf.Variable(0, trainable=False, name='global_step')
+- 이걸 편하게 해주는게 아래꺼
+
+### tf.train.get_or_create_global_step(graph=None)
+
+- Returns and create (if necessary) the global step tensor.
+- **graph**: The graph in which to create the global step tensor. If missing, use default graph.
+
+
+## Softmax
+### tf.nn.sparse_softmax_cross_entropy_with_logits
+- argument를 넣을 때 logits=, labels= 이렇게 name을 명시해줘야 한다.
+- 
+
+
+## tf.Dataset
+- 뭘까...
 
 ## References
 https://tensorflowkorea.gitbooks.io/tensorflow-kr/g3doc/how_tos/variable_scope/
