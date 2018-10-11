@@ -1,20 +1,60 @@
-# Confusing Tensorflow
+# Concepts
+
+## Session
+
+## Graphs
+
+#### tf.get_default_Graph()
+
+#### sess.graph()
+
+## Ops
+
+모두 sess.run을 통해 수행해야 하는 operation들이다.
+
+#### init_op
+- 통상적으로 이것 -> tf.global_variables_initializer()
+- 하지만 tf.data.Dataset을 사용하는 경우 Iterator의 initializer일 수도 있다.
+
+#### loss_op
+- 당연히 가장 중요. tf.summary.scalar로 기록한다.
+
+#### train_op
+- tf.train.AdamOptimizer(learning_rate).minimize(loss_op, var_list=t_vars)
+
+#### summary_op
+- summary에 관한 op.
+
+## Scopes
+
+#### tf.name_scope()
+
+- A context manager for use when defining a Python op.
+
+#### tf.variable_scope()
+
+- A context manager for defining ops that creates variables (layers).
+
+#### tf.get_variable()
+
+- tf.get_variable()은 해당 variable_scope 내에서 variable이 없으면 생성하고, 있으면 불러오는 놈.
+- name_scope는 무시되기 때문에 속편하게 variable_scope만 사용하자.
 
 ## Contrib
 
-### tf.contrib
+#### tf.contrib
 - contrib module containing volatile or experimental code.
 - 텐서플로우 오픈소스 커뮤니티에서 개발에 기여한 코드를 반영했으나,
 아직 테스트가 필요한 애들 모아놓은 모듈.
 
-### tf.contrib.slim
+#### tf.contrib.slim
 - Slim is an interface to contrib functions, examples and models.
 
-
+# Implementations
 
 ## Layers
 
-### tf.nn.conv2d [[doc]](https://www.tensorflow.org/api_docs/python/tf/nn/conv2d)  
+#### tf.nn.conv2d [[doc]](https://www.tensorflow.org/api_docs/python/tf/nn/conv2d)  
 - 가장 기본이 되는 conv2d layer. 간단히 만들려면 그냥 이걸 쓰면 된다.
 - ex) conv = tf.nn.conv2d()
 ```python
@@ -34,7 +74,7 @@ name=None
 - ```strides```: A list of ints. 1-D tensor of length 4. The stride of the sliding window for each dimension of input. The dimension order is determined by the value of data_format, see below for details.
 - ```padding```: A string from: "SAME", "VALID". The type of padding algorithm to use.
 
-### tf.layers.conv2d [[doc]](https://www.tensorflow.org/api_docs/python/tf/layers/conv2d)
+#### tf.layers.conv2d [[doc]](https://www.tensorflow.org/api_docs/python/tf/layers/conv2d)
 - tf.layers는 신경망 구성을 손쉽게 해주는 유틸리티 모음이라고 한다(골빈해커).
 - tf.nn.conv2d를 backend로 사용하기 때문에 작동원리는 사실상 같지만, 기능이 추가되어 있고, parameter가 조금 다르다.
 - ex) conv = tf.layers.conv2d()
@@ -67,21 +107,19 @@ reuse=None
 - ```strides```: An integer or tuple/list of 2 integers, specifying the strides of the convolution along the height and width. Can be a single integer to specify the same value for all spatial dimensions. Specifying any stride value != 1 is incompatible with specifying any dilation_rate value != 1.
 - ```padding```: One of "valid" or "same" (case-insensitive).
 
-### Conv2d(from tf.keras.layers)
+#### Conv2d(from tf.keras.layers)
 - keras껀데, keras에서 넘어온 게 아니라면 일단 지금은 쓸 필요 없을 듯 하다.
 그치만 keras API 쩐다고 하니, 알아두면 좋을 것이다.
 
-
-
 ## Batch Normalization
 
-### tf.nn.batch_normalization
+#### tf.nn.batch_normalization
 
-### tf.layers.batch_normalization
+#### tf.layers.batch_normalization
 
 - parameter로 training, trainable 두 가지가 있어서 둘 모두를 조절해야 함.
 
-### tf.contrib.layers.batch_norm
+#### tf.contrib.layers.batch_norm
 - 편리.
  - updates_collections=None에 대한 설명.  
  "One can set updates_collections=None to force the updates in place,
@@ -92,68 +130,32 @@ reuse=None
  function or with the ReLU activation function, since the next layer’s weights can take care
  of scaling, but for any other activation function, you should add "scale": True to bn_params."
 
+## Softmax
 
+#### tf.nn.sparse_softmax_cross_entropy_with_logits
+- argument를 넣을 때 logits=, labels= 이렇게 name을 명시해줘야 한다.
 
-## Saved
+# What are saved?
 
-### Summary
+## Summary
 - 텐서보드에 찍어보는 놈들. histogram, scalar, image 세 종류가 있음.
 - tf.summary.scalar("name", tensor)
 - writer = tf.summary.FileWriter(log_dir, sess.graph)
 - writer.add_summary(step_summary, global_step=counter)
 
-### Checkpoint
+## Checkpoint
 - 모델 체크포인트.
 - saver = tf.train.Saver(max_to_keep=5)
 - saver.save(sess, os.path.join(checkpoint_dir, model_name), global_step=step)
 - saver.restore(sess, os.path.join(checkpoint_dir, ckpt_name))
 
-### Graph
+## Graph
 - 안드로이드에 올리기 위한 pb파일 만들기 위해 저장.
 - tf.train.write_graph(sess.graph_def, logdir=log_dir, name='full_graph.pb', as_text=False)
 
 
-## Ops
-
-모두 sess.run을 통해 수행해야 하는 operation들이다.
-
-### init_op
-- 통상적으로 이것 -> tf.global_variables_initializer()
-- 하지만 tf.data.Dataset을 사용하는 경우 Iterator의 initializer일 수도 있다.
-
-### loss_op
-- 당연히 가장 중요. tf.summary.scalar로 기록한다.
-
-### train_op
-- tf.train.AdamOptimizer(learning_rate).minimize(loss_op, var_list=t_vars)
-
-### summary_op
-- summary에 관한 op.
 
 
-
-## Scopes
-
-### tf.name_scope()
-
-- A context manager for use when defining a Python op.
-
-### tf.variable_scope()
-
-- A context manager for defining ops that creates variables (layers).
-
-### tf.get_variable()
-
-- tf.get_variable()은 해당 variable_scope 내에서 variable이 없으면 생성하고, 있으면 불러오는 놈.
-- name_scope는 무시되기 때문에 속편하게 variable_scope만 사용하자.
-
-
-
-## Graphs
-
-### tf.get_default_Graph()
-
-### sess.graph()
 
 
 
@@ -179,10 +181,7 @@ reuse=None
 
 
 
-## Softmax
 
-### tf.nn.sparse_softmax_cross_entropy_with_logits
-- argument를 넣을 때 logits=, labels= 이렇게 name을 명시해줘야 한다.
 
 
 
@@ -208,7 +207,7 @@ reuse=None
 
 
 
-## Session
+
 
 
 
