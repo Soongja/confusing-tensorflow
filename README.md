@@ -1,6 +1,7 @@
-# 헷갈쓰
+# Confusing Tensorflow
 
 ## Contrib
+
 ### tf.contrib
 - contrib module containing volatile or experimental code.
 - 텐서플로우 오픈소스 커뮤니티에서 개발에 기여한 코드를 반영했으나,
@@ -10,7 +11,9 @@
 - Slim is an interface to contrib functions, examples and models.
 
 
+
 ## Layers
+
 ### tf.nn.conv2d [[doc]](https://www.tensorflow.org/api_docs/python/tf/nn/conv2d)  
 - 가장 기본이 되는 conv2d layer. 간단히 만들려면 그냥 이걸 쓰면 된다.
 - ex) conv = tf.nn.conv2d()
@@ -69,10 +72,13 @@ reuse=None
 그치만 keras API 쩐다고 하니, 알아두면 좋을 것이다.
 
 
+
 ## Batch Normalization
+
 ### tf.nn.batch_normalization
 
 ### tf.layers.batch_normalization
+
 - parameter로 training, trainable 두 가지가 있어서 둘 모두를 조절해야 함.
 
 ### tf.contrib.layers.batch_norm
@@ -87,26 +93,78 @@ reuse=None
  of scaling, but for any other activation function, you should add "scale": True to bn_params."
 
 
+
+## Saved
+
+### Summary
+- 텐서보드에 찍어보는 놈들. histogram, scalar, image 세 종류가 있음.
+- tf.summary.scalar("name", tensor)
+- writer = tf.summary.FileWriter(log_dir, sess.graph)
+- writer.add_summary(step_summary, global_step=counter)
+
+### Checkpoint
+- 모델 체크포인트.
+- saver = tf.train.Saver(max_to_keep=5)
+- saver.save(sess, os.path.join(checkpoint_dir, model_name), global_step=step)
+- saver.restore(sess, os.path.join(checkpoint_dir, ckpt_name))
+
+### Graph
+- 안드로이드에 올리기 위한 pb파일 만들기 위해 저장.
+- tf.train.write_graph(sess.graph_def, logdir=log_dir, name='full_graph.pb', as_text=False)
+
+
+## Ops
+
+모두 sess.run을 통해 수행해야 하는 operation들이다.
+
+### init_op
+- 통상적으로 이것 -> tf.global_variables_initializer()
+- 하지만 tf.data.Dataset을 사용하는 경우 Iterator의 initializer일 수도 있다.
+
+### loss_op
+- 당연히 가장 중요. tf.summary.scalar로 기록한다.
+
+### train_op
+- tf.train.AdamOptimizer(learning_rate).minimize(loss_op, var_list=t_vars)
+
+### summary_op
+- summary에 관한 op.
+
+
+
 ## Scopes
+
 ### tf.name_scope()
+
+- A context manager for use when defining a Python op.
 
 ### tf.variable_scope()
 
+- A context manager for defining ops that creates variables (layers).
+
 ### tf.get_variable()
+
+- tf.get_variable()은 해당 variable_scope 내에서 variable이 없으면 생성하고, 있으면 불러오는 놈.
+- name_scope는 무시되기 때문에 속편하게 variable_scope만 사용하자.
+
 
 
 ## Graphs
+
 ### tf.get_default_Graph()
 
 ### sess.graph()
 
 
+
 ## Summaries
+
 ### tf.summary.merge_all()
 - 모든 summary 다 합쳐줘
 
 ### tf.summary.merge
-- 원하는 summary들만 합칠 때 사용
+- 원하는 summary들만 합칠 때 사용(ex. GAN에서 G_loss, D_loss들끼리 합칠 때)
+
 
 
 ## Global Step
@@ -120,14 +178,40 @@ reuse=None
 - **graph**: The graph in which to create the global step tensor. If missing, use default graph.
 
 
+
 ## Softmax
+
 ### tf.nn.sparse_softmax_cross_entropy_with_logits
 - argument를 넣을 때 logits=, labels= 이렇게 name을 명시해줘야 한다.
-- 
+
 
 
 ## tf.Dataset
-- 뭘까...
+
+### make_one_shot_iterator()
+
+- 가장 쉬운 놈. initialize 불가능하기 때문에 한바퀴 더 iterate하려면 iterator 또 만들어줘야 한다.
+
+### make_initializable_iterator()
+
+- initialize가 가능하기 때문에 여러 epoch을 돌리기에 가장 적합.
+
+### tf.data.Iterator.from_structure
+
+- reinitializable한 놈. train iterator와 test iterator 번갈아가며 initialize할 때 적합.
+
+
+
+## Printing out tensors
+
+- print(sess.run(tensor))
+
+
+
+## Session
+
+
+
 
 ## References
 https://tensorflowkorea.gitbooks.io/tensorflow-kr/g3doc/how_tos/variable_scope/
