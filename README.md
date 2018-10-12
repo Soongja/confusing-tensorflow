@@ -1,13 +1,14 @@
-## Session
+### Session
 
+***
 
-## Graphs
+### Graphs
 
-#### tf.get_default_Graph()
+##### tf.get_default_Graph()
 
-#### sess.graph()
+##### sess.graph()
 
-
+***
 
 ## Ops
 
@@ -26,6 +27,7 @@
 #### summary_op
 - summary에 관한 op.
 
+***
 
 ## Scopes
 
