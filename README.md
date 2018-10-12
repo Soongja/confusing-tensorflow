@@ -1,45 +1,43 @@
-### Session
+## Session
 
-***
 
-### Graphs
+## Graphs
 
-##### tf.get_default_Graph()
+#### tf.get_default_Graph()
 
-##### sess.graph()
+#### sess.graph()
 
-***
 
-### Ops
+
+## Ops
 
 모두 sess.run을 통해 수행해야 하는 operation들이다.
 
-##### init_op
+#### init_op
 - 통상적으로 이것 -> tf.global_variables_initializer()
 - 하지만 tf.data.Dataset을 사용하는 경우 Iterator의 initializer일 수도 있다.
 
-##### loss_op
+#### loss_op
 - 당연히 가장 중요. tf.summary.scalar로 기록한다.
 
-##### train_op
+#### train_op
 - tf.train.AdamOptimizer(learning_rate).minimize(loss_op, var_list=t_vars)
 
-##### summary_op
+#### summary_op
 - summary에 관한 op.
 
-***
 
-### Scopes
+## Scopes
 
-##### tf.name_scope()
+#### tf.name_scope()
 
 - A context manager for use when defining a Python op.
 
-##### tf.variable_scope()
+#### tf.variable_scope()
 
 - A context manager for defining ops that creates variables (layers).
 
-##### tf.get_variable()
+#### tf.get_variable()
 
 - tf.get_variable()은 해당 variable_scope 내에서 variable이 없으면 생성하고, 있으면 불러오는 놈.
 - name_scope는 무시되기 때문에 속편하게 variable_scope만 사용하자.
