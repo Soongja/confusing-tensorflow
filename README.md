@@ -1,4 +1,28 @@
-## (Class)tf.Session
+## Graph
+
+(Class)tf.Graph
+
+Graph는 Tensor와 Operation으로 구성된다!
+
+#### Tensor
+
+- (Class)tf.Tensor
+- tf.constant, tf.Variable, tf.placeholder 등. Units of data that flow between Operations.
+
+#### Operation
+
+- (Class)tf.Operation
+- Tensor를 input으로 받아 computation을 수행한다.
+
+#### tf.get_default_graph() vs. sess.graph()
+
+- thread를 여러 개 사용하지 않는 한 같을 것.
+
+***
+
+## Session
+
+(Class)tf.Session
 
 #### Properties
 
@@ -9,7 +33,7 @@
 
 - run: Runs operations and evaluates tensors in fetches.
 
-```python
+```
 run(
     fetches,
     feed_dict=None,
@@ -18,55 +42,39 @@ run(
 )
 ```
 
-- fetches에는 graph element를 담으면 되는데, single element여도 되고, graph elements를 담은 list, tuple, dict 등이어도 상관없다.
-- graph element란 **tf.Operation**, **tf.Tensor** 등을 말한다(다른 것들은 생략).
-
-***
-
-## Graph
-
-#### tf.get_default_graph() vs. sess.graph()
-
-- thread를 여러 개 사용하지 않는 한 같을 것.
+- fetches에는 graph element(Operation, Tensor)를 담으면 되는데, single element여도 되고, graph elements를 담은 list, tuple, dict 등이어도 상관없다.
 
 ***
 
 ## Variable
 
-Variable은 꼭 initialize되어야 한다. 그렇지 않으면 graph에서 해당 Variable value를 사용하는 Ops가 실행되지 않는다. => sess.run(tf.global_variables_initializer())
+(Class)tf.Variable
+
+Variable이란 Operation을 실행함으로써 그 값이 바뀔 수 있는 Tensor이다.
+
+Variable을 만드는 가장 좋은 방법은 tf.get_variable()을 사용하는 것이다.
+
+#### tf.get_variable()
+
+- 
+
+- tf.get_variable()은 해당 variable_scope 내에서 variable이 없으면 생성하고, 있으면 불러오는 놈.
+- name_scope는 무시되기 때문에 속편하게 variable_scope만 사용하자.
+
+#### tf.global_variables_initializer()
+
+- Variable은 꼭 initialize되어야 한다. 그렇지 않으면 Graph에서 해당 Variable value를 사용하는 Op이 실행되지 않는다.
 
 #### tf.global_variables(scope=None)
 
-- scope를 정해주면 해당 variable_scope내의 Variables를 return하고, 그렇지 않으면 모든 Variables return.
-- return값은 Variable의 list.
-- tf.train.Saver()의 첫 번째 인자인 var_list에 넣어주기도 하는데, 우린 어차피 모든 variable 저장할 것이니 안 넣어줘도 무방.
+- scope를 정해주면 해당 variable_scope내의 Variable list를 return하고, 그렇지 않으면 모든(global) Variable list를 return한다. scope를 지정해주는 것은 with tf.variable_scope("name"): 을 하고 tf.get_variable()
+- tf.train.Saver()의 첫 번째 인자인 var_list에 넣어주기도 하는데, 그렇게 하지 않아도 어차피 모든 Variable 저장되니 안 넣어줘도 무방.
 
 ***
 
-## Ops
+## Scope
 
-모두 sess.run을 통해 수행해야 하는 operation들이다. 흔히 사용하는 ops 정리.
-
-#### init_op
-
-- 통상적으로 이것 -> tf.global_variables_initializer()
-- 하지만 tf.data.Dataset을 사용하는 경우 Iterator의 initializer일 수도 있다. 그런 경우 op 이름 다르게 하자.
-
-#### loss_op
-
-- 당연히 가장 중요. tf.summary.scalar로 기록한다.
-
-#### train_op
-
-- tf.train.AdamOptimizer(learning_rate).minimize(loss_op, var_list=t_vars)
-
-#### summary_op
-
-- 보통 tf.summary.merge() 혹은 tf.summary.merge_all()을 summary_op으로 사용한다.
-
-***
-
-## Scopes
+- 
 
 #### tf.name_scope()
 
@@ -76,10 +84,29 @@ Variable은 꼭 initialize되어야 한다. 그렇지 않으면 graph에서 해�
 
 - A context manager for defining ops that creates variables (layers).
 
-#### tf.get_variable()
+***
 
-- tf.get_variable()은 해당 variable_scope 내에서 variable이 없으면 생성하고, 있으면 불러오는 놈.
-- name_scope는 무시되기 때문에 속편하게 variable_scope만 사용하자.
+## Ops
+
+sess.run을 통해 흔히 실행되는 ops 정리.
+
+#### init_op
+
+- 통상적으로 이것 -> tf.global_variables_initializer()
+- 하지만 tf.data.Dataset을 사용하는 경우 Iterator의 initializer일 수도 있다. 그런 경우 op 이름 다르게 하자.
+
+#### loss_op
+
+- 당연히 가장 중요. tf.summary.scalar로 기록한다.
+- ex)tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=, labels=))
+
+#### train_op
+
+- ex)tf.train.AdamOptimizer(learning_rate).minimize(loss_op, var_list=t_vars)
+
+#### summary_op
+
+- 보통 tf.summary.merge() 혹은 tf.summary.merge_all()로 summary들을 합쳐 summary_op으로 사용한다.
 
 ***
 
@@ -88,8 +115,7 @@ Variable은 꼭 initialize되어야 한다. 그렇지 않으면 graph에서 해�
 #### tf.contrib
 
 - contrib module containing volatile or experimental code.
-- 텐서플로우 오픈소스 커뮤니티에서 개발에 기여한 코드를 반영했으나,
-아직 테스트가 필요한 애들 모아놓은 모듈.
+- 텐서플로우 오픈소스 커뮤니티에서 개발에 기여한 코드를 반영했으나, 아직 테스트가 필요한 애들 모아놓은 모듈.
 
 #### tf.contrib.slim
 
