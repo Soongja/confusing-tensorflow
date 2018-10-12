@@ -1,23 +1,56 @@
-## Session
+## (Class)tf.Session
+
+#### Properties
+
+- graph: 해당 session에서 launch된 graph
+- graph_def: A serializable version of the underlying TensorFlow graph. 안드로이드에 올리기 위해 pb파일을 만들 때 필요하다.
+
+#### Methods
+
+- run: Runs operations and evaluates tensors in fetches.
+
+```python
+run(
+    fetches,
+    feed_dict=None,
+    options=None,
+    run_metadata=None
+)
+```
+
+- fetches에는 graph element를 담으면 되는데, single element여도 되고, graph elements를 담은 list, tuple, dict 등이어도 상관없다.
+- graph element란 **tf.Operation**, **tf.Tensor** 등을 말한다(다른 것들은 생략).
 
 ***
 
-## Graphs
+## Graph
 
-#### tf.get_default_Graph()
+#### tf.get_default_graph() vs. sess.graph()
 
-#### sess.graph()
+- thread를 여러 개 사용하지 않는 한 같을 것.
+
+***
+
+## Variable
+
+Variable은 꼭 initialize되어야 한다. 그렇지 않으면 graph에서 해당 Variable value를 사용하는 Ops가 실행되지 않는다. => sess.run(tf.global_variables_initializer())
+
+#### tf.global_variables(scope=None)
+
+- scope를 정해주면 해당 variable_scope내의 Variables를 return하고, 그렇지 않으면 모든 Variables return.
+- return값은 Variable의 list.
+- tf.train.Saver()의 첫 번째 인자인 var_list에 넣어주기도 하는데, 우린 어차피 모든 variable 저장할 것이니 안 넣어줘도 무방.
 
 ***
 
 ## Ops
 
-모두 sess.run을 통해 수행해야 하는 operation들이다.
+모두 sess.run을 통해 수행해야 하는 operation들이다. 흔히 사용하는 ops 정리.
 
 #### init_op
 
 - 통상적으로 이것 -> tf.global_variables_initializer()
-- 하지만 tf.data.Dataset을 사용하는 경우 Iterator의 initializer일 수도 있다.
+- 하지만 tf.data.Dataset을 사용하는 경우 Iterator의 initializer일 수도 있다. 그런 경우 op 이름 다르게 하자.
 
 #### loss_op
 
@@ -29,7 +62,7 @@
 
 #### summary_op
 
-- summary에 관한 op.
+- 보통 tf.summary.merge() 혹은 tf.summary.merge_all()을 summary_op으로 사용한다.
 
 ***
 
@@ -66,62 +99,21 @@
 
 ## Layers
 
-#### tf.nn.conv2d [[doc]](https://www.tensorflow.org/api_docs/python/tf/nn/conv2d)  
+#### tf.nn.conv2d
+
 - 가장 기본이 되는 conv2d layer. 간단히 만들려면 그냥 이걸 쓰면 된다.
 - ex) conv = tf.nn.conv2d()
-```python
-tf.nn.conv2d(
-input,
-filter,
-strides,
-padding,
-use_cudnn_on_gpu=True,
-data_format='NHWC',
-dilations=[1, 1, 1, 1],
-name=None
-)
-```
-- ```input```: A Tensor. Must be one of the following types: half, bfloat16, float32, float64. A 4-D tensor. The dimension order is interpreted according to the value of data_format, see below for details.
-- ```filter```: A Tensor. Must have the same type as input. A 4-D tensor of shape [filter_height, filter_width, in_channels, out_channels]
-- ```strides```: A list of ints. 1-D tensor of length 4. The stride of the sliding window for each dimension of input. The dimension order is determined by the value of data_format, see below for details.
-- ```padding```: A string from: "SAME", "VALID". The type of padding algorithm to use.
 
-#### tf.layers.conv2d [[doc]](https://www.tensorflow.org/api_docs/python/tf/layers/conv2d)
+#### tf.layers.conv2d
+
 - tf.layers는 신경망 구성을 손쉽게 해주는 유틸리티 모음이라고 한다(골빈해커).
 - tf.nn.conv2d를 backend로 사용하기 때문에 작동원리는 사실상 같지만, 기능이 추가되어 있고, parameter가 조금 다르다.
 - ex) conv = tf.layers.conv2d()
-```python
-tf.layers.conv2d(
-inputs,
-filters,
-kernel_size,
-strides=(1, 1),
-padding='valid',
-data_format='channels_last',
-dilation_rate=(1, 1),
-activation=None,
-use_bias=True,
-kernel_initializer=None,
-bias_initializer=tf.zeros_initializer(),
-kernel_regularizer=None,
-bias_regularizer=None,
-activity_regularizer=None,
-kernel_constraint=None,
-bias_constraint=None,
-trainable=True,
-name=None,
-reuse=None
-)
-```
-- ```inputs```: Tensor input.
-- ```filters```: Integer, the dimensionality of the output space (i.e. the number of filters in the convolution).
-- ```kernel_size```: An integer or tuple/list of 2 integers, specifying the height and width of the 2D convolution window. Can be a single integer to specify the same value for all spatial dimensions.
-- ```strides```: An integer or tuple/list of 2 integers, specifying the strides of the convolution along the height and width. Can be a single integer to specify the same value for all spatial dimensions. Specifying any stride value != 1 is incompatible with specifying any dilation_rate value != 1.
-- ```padding```: One of "valid" or "same" (case-insensitive).
 
 #### Conv2d(from tf.keras.layers)
+
 - keras껀데, keras에서 넘어온 게 아니라면 일단 지금은 쓸 필요 없을 듯 하다.
-그치만 keras API 쩐다고 하니, 알아두면 좋을 것이다.
+그치만 keras API 좋다고 하니, 알아두면 좋을 것이다.
 
 ***
 
@@ -151,6 +143,7 @@ reuse=None
 
 #### tf.nn.sparse_softmax_cross_entropy_with_logits
 - argument를 넣을 때 logits=, labels= 이렇게 name을 명시해줘야 한다.
+- logits의 dtype은 float16, float32, float64이어야 하고, labels의 dtype은 int32, in64이어야 한다. 
 
 ***
 
@@ -179,11 +172,15 @@ reuse=None
 
 ## Summaries
 
+#### tf.summary.image
+
+- tensor의 dtype은 uint8 혹은 float32이어야 하고, [batch_size, height, width, channels]의 shape을 가지는데 channels는 1, 3, 4 중 하나여야 한다.
+
 #### tf.summary.merge_all()
 
 - 모든 summary 다 합쳐줘
 
-#### tf.summary.merge
+#### tf.summary.merge()
 
 - 원하는 summary들만 합칠 때 사용(ex. GAN에서 G_loss, D_loss들끼리 합칠 때)
 
