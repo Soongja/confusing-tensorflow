@@ -104,7 +104,7 @@ Variable이란 Operation을 실행함으로써 그 값이 바뀔 수 있는 Tens
 
 ***
 
-## What are saved after training?
+## What could be saved?
 
 ## Summary
 
@@ -118,9 +118,13 @@ writer = tf.summary.FileWriter(log_dir, sess.graph)
 
 tf.summary.image("pred_masks", self.preds, max_outputs=2)
 
-- #을 2개 3개 4개로 쪼개서 분류 더 잘하자. max_outputs등에 대한 설명도 다 넣자.
+summary_op = tf.summary.merge_all()
+
+step_summary = sess.run(summary_op)
 
 writer.add_summary(step_summary, global_step=counter)
+
+### Types
 
 #### tf.summary.scalar
 
@@ -129,10 +133,13 @@ writer.add_summary(step_summary, global_step=counter)
 #### tf.summary.image
 
 - 이미지 기록. tensor의 dtype은 uint8 혹은 float32이어야 하고, [batch_size, height, width, channels]의 shape을 가지는데 channels는 1, 3, 4 중 하나여야 한다.
+- max_outputs argument를 통해 저장될 이미지의 갯수를 정할 수 있다.
 
 #### tf.summary.histogram
 
 - data의 distribution을 파악할 수 있다.
+
+### Merge
 
 #### tf.summary.merge()
 
@@ -144,13 +151,17 @@ writer.add_summary(step_summary, global_step=counter)
 
 ## Checkpoint
 
-- 학습된 모델 사용을 위한 체크포인트.
-- saver = tf.train.Saver(max_to_keep=5)를 만들고, saver.save(sess, os.path.join(checkpoint_dir, model_name), global_step=step)으로 저장한다.
+학습된 모델 재사용을 위한 체크포인트.
+
+#### example process
+
+- saver = tf.train.Saver(max_to_keep=5)
+- saver.save(sess, os.path.join(checkpoint_dir, model_name), global_step=step)
 - saver.restore(sess, os.path.join(checkpoint_dir, ckpt_name))
 
-#### Graph
+## Graph protobuf
 
-- 안드로이드에 올리기 위한 pb파일 만들기 위해 저장.
+- 안드로이드에 올리기 위한 pb파일.
 - tf.train.write_graph(sess.graph_def, logdir=log_dir, name='full_graph.pb', as_text=False)
 
 ***
@@ -168,23 +179,20 @@ writer.add_summary(step_summary, global_step=counter)
 
 ***
 
-## Layers
+## Conv2d
 
 #### tf.nn.conv2d
 
-- 가장 기본이 되는 conv2d layer. 간단히 만들려면 그냥 이걸 쓰면 된다.
-- ex) conv = tf.nn.conv2d()
+- 가장 기본이 되는 conv2d layer. 이런 저런 생각하기 싫으면 그냥 이걸 쓰면 된다.
 
 #### tf.layers.conv2d
 
-- tf.layers는 신경망 구성을 손쉽게 해주는 유틸리티 모음이라고 한다(골빈해커).
+- tf.layers는 neural net 구성을 손쉽게 해주는 유틸리티 모음.
 - tf.nn.conv2d를 backend로 사용하기 때문에 작동원리는 사실상 같지만, 기능이 추가되어 있고, parameter가 조금 다르다.
-- ex) conv = tf.layers.conv2d()
 
 #### Conv2d(from tf.keras.layers)
 
-- keras껀데, keras에서 넘어온 게 아니라면 일단 지금은 쓸 필요 없을 듯 하다.
-그치만 keras API 좋다고 하니, 알아두면 좋을 것이다.
+- keras껀데, keras에서 넘어온 게 아니라면 일단 지금은 쓸 필요 없을 듯 하다. 원하면 사용.
 
 ***
 
@@ -213,6 +221,7 @@ writer.add_summary(step_summary, global_step=counter)
 ## Softmax
 
 #### tf.nn.sparse_softmax_cross_entropy_with_logits
+
 - argument를 넣을 때 logits=, labels= 이렇게 name을 명시해줘야 한다.
 - logits의 dtype은 float16, float32, float64이어야 하고, labels의 dtype은 int32, in64이어야 한다. 
 
@@ -227,11 +236,13 @@ writer.add_summary(step_summary, global_step=counter)
 #### tf.train.get_or_create_global_step(graph=None)
 
 - Returns and create (if necessary) the global step tensor.
-- **graph**: The graph in which to create the global step tensor. If missing, use default graph.
+- ```graph```: The graph in which to create the global step tensor. If missing, use default graph.
 
 ***
 
 ## tf.Dataset
+
+Pytorch의 torch.utils.data.Dataset처럼 Dataset과 그에 대한 iterator 편리하게 만들 수 있게 해주는 놈.
 
 #### make_one_shot_iterator()
 
@@ -243,7 +254,7 @@ writer.add_summary(step_summary, global_step=counter)
 
 #### tf.data.Iterator.from_structure
 
-- reinitializable한 놈. train iterator와 test iterator 번갈아가며 initialize할 때 적합.
+- reinitializable한 놈. 두 개의 iterator를 번갈아 가며 쓸 수 있다는 뜻. train iterator와 test iterator 번갈아가며 initialize할 때 적합.
 
 ***
 
